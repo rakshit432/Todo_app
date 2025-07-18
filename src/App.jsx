@@ -5,6 +5,7 @@ import './App.css';
 const TodoContext = createContext();
 
 function TodoProvider({ children }) {
+  // Each todo is now an object: { text: string, completed: boolean }
   const [todos, setTodos] = useState([]);
   return (
     <TodoContext.Provider value={{ todos, setTodos }}>
@@ -19,8 +20,10 @@ function App() {
     <TodoProvider>
       <div>
         <h1>Todo App</h1>
-        <AddTodo />
-        <DisplayTodo />
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <AddTodo />
+          <DisplayTodo />
+        </div>
       </div>
     </TodoProvider>
   );
@@ -34,7 +37,7 @@ function AddTodo() {
   const addTodo = () => {
     const trimmed = input.trim();
     if (trimmed === '') return;
-    setTodos([...todos, trimmed]);
+    setTodos([...todos, { text: trimmed, completed: false }]);
     setInput(''); // clear input after adding
   };
 
@@ -51,7 +54,7 @@ function AddTodo() {
   );
 }
 
-// ✅ 4. Display Todo + Delete Support
+// ✅ 4. Display Todo + Delete & Mark Support
 function DisplayTodo() {
   const { todos, setTodos } = useContext(TodoContext);
 
@@ -61,11 +64,26 @@ function DisplayTodo() {
     setTodos(updated);
   };
 
+  const toggleMark = (index) => {
+    const updated = todos.map((todo, idx) =>
+      idx === index ? { ...todo, completed: !todo.completed } : todo
+    );
+    setTodos(updated);
+  };
+
   return (
     <div>
       {todos.map((todo, idx) => (
-        <div key={idx} className="todo-item">
-          <span>{todo}</span>
+        <div key={idx} className="todo-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => toggleMark(idx)}>
+            {todo.completed ? "✅" : "⬜"}
+          </button>
+          {/* 
+            The 'textDecoration' CSS property controls how text is decorated.
+            Here, if the todo is completed, we show a line through the text ('line-through').
+            Otherwise, we show normal text ('none').
+          */}
+          <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>{todo.text}</span>
           <button onClick={() => deleteTodo(idx)}>Delete</button>
         </div>
       ))}
