@@ -5,23 +5,27 @@ import './App.css';
 const TodoContext = createContext();
 
 function TodoProvider({ children }) {
-  // Each todo is now an object: { text: string, completed: boolean }
   const [todos, setTodos] = useState([]);
+  const [editIndex, setEditIndex] = useState(null); // null when not editing
+  const [input, setInput] = useState('');
+
   return (
-    <TodoContext.Provider value={{ todos, setTodos }}>
+    <TodoContext.Provider
+      value={{ todos, setTodos, editIndex, setEditIndex, input, setInput }}
+    >
       {children}
     </TodoContext.Provider>
   );
 }
 
-// ✅ 2. Main App Component
+// ✅ 2. App Wrapper
 function App() {
   return (
     <TodoProvider>
       <div>
         <h1>Todo App</h1>
+        <AddTodo />
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <AddTodo />
           <DisplayTodo />
         </div>
       </div>
@@ -29,16 +33,33 @@ function App() {
   );
 }
 
-// ✅ 3. Add Todo Component
+// ✅ 3. Add + Edit Todo Logic
 function AddTodo() {
-  const { todos, setTodos } = useContext(TodoContext);
-  const [input, setInput] = useState('');
+  const {
+    todos,
+    setTodos,
+    editIndex,
+    setEditIndex,
+    input,
+    setInput,
+  } = useContext(TodoContext);
 
-  const addTodo = () => {
+  const handleSubmit = () => {
     const trimmed = input.trim();
-    if (trimmed === '') return;
-    setTodos([...todos, { text: trimmed, completed: false }]);
-    setInput(''); // clear input after adding
+    if (!trimmed) return;
+
+    if (editIndex !== null) {
+      // Editing an existing todo
+      const updated = [...todos];
+      updated[editIndex].text = trimmed;
+      setTodos(updated);
+      setEditIndex(null);
+    } else {
+      // Adding a new todo
+      setTodos([...todos, { text: trimmed, completed: false }]);
+    }
+
+    setInput('');
   };
 
   return (
@@ -49,18 +70,23 @@ function AddTodo() {
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
-      <button onClick={addTodo}>Add</button>
+      <button onClick={handleSubmit}>{editIndex !== null ? 'Update' : 'Add'}</button>
     </div>
   );
 }
 
-// ✅ 4. Display Todo + Delete & Mark Support
+// ✅ 4. Display, Delete, Edit, Mark
 function DisplayTodo() {
-  const { todos, setTodos } = useContext(TodoContext);
+  const {
+    todos,
+    setTodos,
+    setEditIndex,
+    setInput,
+  } = useContext(TodoContext);
 
   const deleteTodo = (index) => {
     const updated = [...todos];
-    updated.splice(index, 1); // remove 1 item at 'index'
+    updated.splice(index, 1);
     setTodos(updated);
   };
 
@@ -71,20 +97,36 @@ function DisplayTodo() {
     setTodos(updated);
   };
 
+  const editTodo = (index) => {
+    setEditIndex(index);
+    setInput(todos[index].text);
+  };
+
   return (
     <div>
       {todos.map((todo, idx) => (
-        <div key={idx} className="todo-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          key={idx}
+          className="todo-item"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '6px',
+          }}
+        >
           <button onClick={() => toggleMark(idx)}>
-            {todo.completed ? "✅" : "⬜"}
+            {todo.completed ? '✅' : '⬜'}
           </button>
-          {/* 
-            The 'textDecoration' CSS property controls how text is decorated.
-            Here, if the todo is completed, we show a line through the text ('line-through').
-            Otherwise, we show normal text ('none').
-          */}
-          <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>{todo.text}</span>
+          <span
+            style={{
+              textDecoration: todo.completed ? 'line-through' : 'none',
+            }}
+          >
+            {todo.text}
+          </span>
           <button onClick={() => deleteTodo(idx)}>Delete</button>
+          <button onClick={() => editTodo(idx)}>Edit</button>
         </div>
       ))}
     </div>

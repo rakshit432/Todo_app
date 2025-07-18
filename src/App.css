@@ -1,0 +1,61 @@
+/* App.css */
+
+body {
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+h1 {
+  text-align: center;
+  color: #444;
+}
+
+input {
+  padding: 8px;
+  margin-right: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.todo-item {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  margin-top: 10px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.todo-item:hover {
+  background-color: #f0f8ff;
+}
+
+.todo-item button {
+  background-color: transparent;
+  color: #333;
+}
+
+.todo-item button:hover {
+  color: #ff0000;
+}
+
+span {
+  flex: 1;
+}
