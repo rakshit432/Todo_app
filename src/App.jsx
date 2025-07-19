@@ -1,39 +1,66 @@
-import { useState, createContext, useContext } from 'react';
-import './App.css';
+import { useState, createContext, useContext } from "react";
+import "./App.css";
 
 // ✅ 1. Context Setup
 const TodoContext = createContext();
 
 function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
-  const [editIndex, setEditIndex] = useState(null); // null when not editing
-  const [input, setInput] = useState('');
+  const [editIndex, setEditIndex] = useState(null);
+  const [input, setInput] = useState("");
+  const [theme, setTheme] = useState(true); // true = light
 
   return (
     <TodoContext.Provider
-      value={{ todos, setTodos, editIndex, setEditIndex, input, setInput }}
+      value={{
+        todos,
+        setTodos,
+        editIndex,
+        setEditIndex,
+        input,
+        setInput,
+        theme,
+        setTheme,
+      }}
     >
       {children}
     </TodoContext.Provider>
   );
 }
 
-// ✅ 2. App Wrapper
+// ✅ 2. Theme Wrapper
+function Theme({ children }) {
+  const { theme, setTheme } = useContext(TodoContext);
+
+  return (
+    <div className={theme ? "light" : "dark"}>
+      <div className="container">
+        <button
+          className="theme-toggle"
+          onClick={() => setTheme((prev) => !prev)}
+        >
+          {theme ? "🌞 Light Mode" : "🌙 Dark Mode"}
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ✅ 3. App Component
 function App() {
   return (
     <TodoProvider>
-      <div>
-        <h1>Todo App</h1>
+      <Theme>
+        <h1>📝 Todo App</h1>
         <AddTodo />
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <DisplayTodo />
-        </div>
-      </div>
+        <DisplayTodo />
+      </Theme>
     </TodoProvider>
   );
 }
 
-// ✅ 3. Add + Edit Todo Logic
+// ✅ 4. Add + Edit Todo Logic
 function AddTodo() {
   const {
     todos,
@@ -49,40 +76,36 @@ function AddTodo() {
     if (!trimmed) return;
 
     if (editIndex !== null) {
-      // Editing an existing todo
       const updated = [...todos];
       updated[editIndex].text = trimmed;
       setTodos(updated);
       setEditIndex(null);
     } else {
-      // Adding a new todo
       setTodos([...todos, { text: trimmed, completed: false }]);
     }
 
-    setInput('');
+    setInput("");
   };
 
   return (
-    <div>
+    <div className="add-todo">
       <input
         type="text"
-        placeholder="Add a todo"
+        placeholder="Add a todo..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
-      <button onClick={handleSubmit}>{editIndex !== null ? 'Update' : 'Add'}</button>
+      <button onClick={handleSubmit}>
+        {editIndex !== null ? "Update" : "Add"}
+      </button>
     </div>
   );
 }
 
-// ✅ 4. Display, Delete, Edit, Mark
+// ✅ 5. Display, Delete, Edit, Mark
 function DisplayTodo() {
-  const {
-    todos,
-    setTodos,
-    setEditIndex,
-    setInput,
-  } = useContext(TodoContext);
+  const { todos, setTodos, setEditIndex, setInput } =
+    useContext(TodoContext);
 
   const deleteTodo = (index) => {
     const updated = [...todos];
@@ -103,30 +126,22 @@ function DisplayTodo() {
   };
 
   return (
-    <div>
+    <div className="todo-list">
       {todos.map((todo, idx) => (
-        <div
-          key={idx}
-          className="todo-item"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '6px',
-          }}
-        >
+        <div className="todo-item" key={idx}>
           <button onClick={() => toggleMark(idx)}>
-            {todo.completed ? '✅' : '⬜'}
+            {todo.completed ? "✅" : "⬜"}
           </button>
           <span
             style={{
-              textDecoration: todo.completed ? 'line-through' : 'none',
+              textDecoration: todo.completed ? "line-through" : "none",
+              flex: 1,
             }}
           >
             {todo.text}
           </span>
-          <button onClick={() => deleteTodo(idx)}>Delete</button>
           <button onClick={() => editTodo(idx)}>Edit</button>
+          <button onClick={() => deleteTodo(idx)}>Delete</button>
         </div>
       ))}
     </div>
