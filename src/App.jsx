@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useEffect } from "react";
 import "./App.css";
 
 // ✅ 1. Context Setup
@@ -8,7 +8,16 @@ function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [input, setInput] = useState("");
-  const [theme, setTheme] = useState(true); // true = light
+  const [theme, setTheme] = useState(() => {
+    // Load theme from localStorage on initial render
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme ? JSON.parse(savedTheme) : true; // true = light
+  });
+
+  // Save theme to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('theme', JSON.stringify(theme));
+  }, [theme]);
 
   return (
     <TodoContext.Provider
